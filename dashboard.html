@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduVR · Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7f4;
+  --surface:#ffffff;
+  --border:rgba(0,0,0,0.08);
+  --text:#1a1a1a;
+  --muted:#888;
+  --accent:#2563eb;
+  --good:#16a34a;
+  --ok:#d97706;
+  --low:#dc2626;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0f111a;--surface:#181c2a;--border:rgba(255,255,255,0.08);
+  --text:#e8eaf0;--muted:#5a6480;--accent:#60a5fa;
+  --good:#4ade80;--ok:#fbbf24;--low:#f87171;
+}}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+header{
+  background:var(--surface);border-bottom:0.5px solid var(--border);
+  padding:18px 32px;display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px}
+.logo span{color:var(--accent)}
+.header-meta{font-size:13px;color:var(--muted)}
+
+.container{max-width:900px;margin:0 auto;padding:32px 20px 64px}
+
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.stat{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:20px 18px}
+.stat-label{font-size:11px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat-value{font-family:'Syne',sans-serif;font-weight:700;font-size:28px;line-height:1}
+.stat-value.good{color:var(--good)}
+.stat-value.ok  {color:var(--ok)}
+.stat-value.low {color:var(--low)}
+
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.card-title{font-size:12px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);padding:16px 20px;border-bottom:0.5px solid var(--border)}
+
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 20px;border-bottom:0.5px solid var(--border)}
+td{padding:13px 20px;font-size:14px;border-bottom:0.5px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,0,0,0.02)}
+
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+.badge.good{background:rgba(22,163,74,0.1);color:var(--good)}
+.badge.ok  {background:rgba(217,119,6,0.1); color:var(--ok)}
+.badge.low {background:rgba(220,38,38,0.1); color:var(--low)}
+
+.bar-wrap{width:120px;background:var(--border);border-radius:4px;height:6px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
+.bar{height:100%;border-radius:4px;transition:width .6s ease}
+.bar.good{background:var(--good)}
+.bar.ok  {background:var(--ok)}
+.bar.low {background:var(--low)}
+
+.username-cell{font-family:'DM Mono',monospace;font-size:13px}
+.score-cell{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
+
+.empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px}
+
+.refresh-btn{
+  background:none;border:0.5px solid var(--border);border-radius:8px;
+  padding:7px 14px;font-size:13px;color:var(--muted);cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:border-color .15s,color .15s;
+}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.setup-banner{
+  background:rgba(37,99,235,0.06);border:0.5px solid rgba(37,99,235,0.2);
+  border-radius:12px;padding:16px 20px;margin-bottom:24px;font-size:13px;
+  color:var(--accent);line-height:1.6;
+}
+.setup-banner code{background:rgba(37,99,235,0.1);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px}
+
+@media(max-width:600px){
+  .stat-row{grid-template-columns:1fr 1fr}
+  .bar-wrap{display:none}
+  header{padding:14px 16px}
+  .container{padding:20px 12px 48px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Edu<span>VR</span> <span style="font-weight:300;font-size:15px;color:var(--muted)">results</span></div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="header-meta" id="last-updated"></span>
+    <button class="refresh-btn" onclick="loadData()">Refresh</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="setup-banner" id="setup-banner" style="display:none">
+    Replace <code>SHEET_ID</code> at the top of this file's script with your Google Sheet ID, then publish the sheet (File → Share → Publish to web → CSV).
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-label">Total players</div><div class="stat-value" id="s-count">—</div></div>
+    <div class="stat"><div class="stat-label">Average score</div><div class="stat-value" id="s-avg">—</div></div>
+    <div class="stat"><div class="stat-label">Top score</div><div class="stat-value good" id="s-top">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Player results</div>
+    <div id="table-area">
+      <div class="loading"><div class="spinner"></div>Loading results…</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const MAX_SCORE = 100;
+
+function scoreClass(pct){return pct>=75?'good':pct>=50?'ok':'low'}
+
+async function loadData(){
+  const area=document.getElementById('table-area');
+  area.innerHTML='<div class="loading"><div class="spinner"></div>Loading results…</div>';
+
+  if(SHEET_ID==="YOUR_GOOGLE_SHEET_ID"){
+    document.getElementById('setup-banner').style.display='block';
+    area.innerHTML='<div class="empty">Configure your Google Sheet ID above to see results.</div>';
+    return;
+  }
+
+ const url=`https://docs.google.com/spreadsheets/d/e/2PACX-1vSFBoZwAcUkfkazU-salJcYzKwDkZBckaUZVDjV37aPHi0MaPy_63kan-BaRFm-_gxnz2EWtC6hM64u/pub?gid=0&single=true&output=csv`;
+  try{
+    const res=await fetch(url);
+    if(!res.ok)throw new Error('Fetch failed');
+    const csv=await res.text();
+    const rows=csv.trim().split('\n').map(r=>r.split(',').map(c=>c.trim().replace(/^"|"$/g,'')));
+    const data=rows.slice(1).filter(r=>r[0]&&r[1]);
+    render(data);
+  }catch(e){
+    area.innerHTML='<div class="empty">Could not load data. Make sure the sheet is published publicly.</div>';
+  }
+}
+
+function render(data){
+  if(!data.length){
+    document.getElementById('table-area').innerHTML='<div class="empty">No results yet.</div>';
+    renderStats([]);return;
+  }
+
+  const scores=data.map(r=>({
+    username:r[0],
+    score:Math.min(parseInt(r[1])||0,MAX_SCORE),
+    date:r[2]||''
+  }));
+
+  renderStats(scores);
+
+  const sorted=[...scores].sort((a,b)=>b.score-a.score);
+  const rows=sorted.map((p,i)=>{
+    const pct=Math.round((p.score/MAX_SCORE)*100);
+    const cls=scoreClass(pct);
+    const dateStr=p.date?new Date(p.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'';
+    return`<tr>
+      <td style="color:var(--muted);font-size:13px">${i+1}</td>
+      <td class="username-cell">${p.username}</td>
+      <td>
+        <span class="bar-wrap"><span class="bar ${cls}" style="width:${pct}%"></span></span>
+        <span class="score-cell">${p.score}<span style="color:var(--muted);font-weight:400;font-size:12px">/${MAX_SCORE}</span></span>
+      </td>
+      <td><span class="badge ${cls}">${pct}%</span></td>
+      <td style="color:var(--muted);font-size:13px">${dateStr}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('table-area').innerHTML=`
+    <table>
+      <thead><tr>
+        <th style="width:40px">#</th>
+        <th>Player</th>
+        <th>Score</th>
+        <th>Result</th>
+        <th>Date</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  document.getElementById('last-updated').textContent=
+    'Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+function renderStats(scores){
+  const n=scores.length;
+  document.getElementById('s-count').textContent=n;
+  if(!n){document.getElementById('s-avg').textContent='—';document.getElementById('s-top').textContent='—';return;}
+  const avg=Math.round(scores.reduce((s,p)=>s+p.score,0)/n);
+  const top=Math.max(...scores.map(p=>p.score));
+  const avgPct=Math.round(avg/MAX_SCORE*100);
+  const el=document.getElementById('s-avg');
+  el.textContent=avg+' pts';
+  el.className='stat-value '+scoreClass(avgPct);
+  document.getElementById('s-top').textContent=top+' pts';
+}
+
+loadData();
+</script>
+</body>
+</html>
