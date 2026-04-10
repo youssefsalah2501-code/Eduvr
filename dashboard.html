@@ -78,7 +78,13 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzthJfAk3pLpVMq
 // ─────────────────────────────────────────────────────────────
 
 const MAX_SCORE = 7;
-
+function getFeedback(pct){
+  if(pct >= 86) return "Excellent !";
+  if(pct >= 71) return "Very Good !";
+  if(pct >= 57) return "Good !";
+  if(pct >= 43) return "Try harder !";
+  return "Please replay !";
+}
 function scoreClass(pct){ return pct>=75?'good':pct>=50?'ok':'low' }
 
 async function loadData(){
