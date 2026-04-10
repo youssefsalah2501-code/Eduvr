@@ -21,7 +21,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 header{background:var(--surface);border-bottom:0.5px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px}
 .logo span{color:var(--accent)}
-.container{max-width:900px;margin:0 auto;padding:32px 20px 64px}
+.container{max-width:1000px;margin:0 auto;padding:32px 20px 64px}
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
 .stat{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:20px 18px}
 .stat-label{font-size:11px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
@@ -38,7 +38,11 @@ tr:hover td{background:rgba(0,0,0,0.02)}
 .badge.good{background:rgba(22,163,74,0.1);color:var(--good)}
 .badge.ok{background:rgba(217,119,6,0.1);color:var(--ok)}
 .badge.low{background:rgba(220,38,38,0.1);color:var(--low)}
-.bar-wrap{width:120px;background:var(--border);border-radius:4px;height:6px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
+.feedback-pill{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+.feedback-pill.good{background:rgba(22,163,74,0.08);color:var(--good)}
+.feedback-pill.ok{background:rgba(217,119,6,0.08);color:var(--ok)}
+.feedback-pill.low{background:rgba(220,38,38,0.08);color:var(--low)}
+.bar-wrap{width:100px;background:var(--border);border-radius:4px;height:6px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
 .bar{height:100%;border-radius:4px}
 .bar.good{background:var(--good)}.bar.ok{background:var(--ok)}.bar.low{background:var(--low)}
 .score-cell{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
@@ -48,6 +52,7 @@ tr:hover td{background:rgba(0,0,0,0.02)}
 .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
 .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){.stat-row{grid-template-columns:1fr 1fr}.bar-wrap{display:none}}
 </style>
 </head>
 <body>
@@ -73,27 +78,28 @@ tr:hover td{background:rgba(0,0,0,0.02)}
 </div>
 
 <script>
-// ── PASTE YOUR APPS SCRIPT URL HERE ──────────────────────────
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzthJfAk3pLpVMqYiI4O-Tl1xlNYGXRVxM7EvDiRorDasR08Wd4ZrXRXYnuvekjvdiF/exec";
+const MAX_SCORE = 7;
+
+// ── FEEDBACK MESSAGES — edit these as you like ────────────────
+function getFeedback(pct){
+  if(pct >= 86) return { text:"Excellent !"    , cls:"good" };
+  if(pct >= 71) return { text:"Very good !"    , cls:"good" };
+  if(pct >= 57) return { text:"Good !"         , cls:"ok"   };
+  if(pct >= 43) return { text:"Try harder !"   , cls:"ok"   };
+  return               { text:"Please replay !", cls:"low"  };
+}
 // ─────────────────────────────────────────────────────────────
 
-const MAX_SCORE = 7;
-function getFeedback(pct){
-  if(pct >= 86) return "Excellent !";
-  if(pct >= 71) return "Very Good !";
-  if(pct >= 57) return "Good !";
-  if(pct >= 43) return "Try harder !";
-  return "Please replay !";
-}
 function scoreClass(pct){ return pct>=75?'good':pct>=50?'ok':'low' }
 
 async function loadData(){
   document.getElementById('table-area').innerHTML='<div class="loading"><div class="spinner"></div>Loading results…</div>';
   try{
-    const res = await fetch(APPS_SCRIPT_URL + "?action=get");
+    const res  = await fetch(APPS_SCRIPT_URL + "?action=get");
     const data = await res.json();
     render(data);
-  } catch(e) {
+  } catch(e){
     document.getElementById('table-area').innerHTML='<div class="empty">Could not load data. Make sure the Apps Script is deployed correctly.</div>';
   }
 }
@@ -101,46 +107,60 @@ async function loadData(){
 function render(data){
   if(!data||!data.length){
     document.getElementById('table-area').innerHTML='<div class="empty">No results yet. Play the game!</div>';
-    renderStats([]);return;
+    renderStats([]);
+    return;
   }
 
   renderStats(data);
 
   const sorted=[...data].sort((a,b)=>b.score-a.score);
   const rows=sorted.map((p,i)=>{
-    const pct=Math.round((p.score/MAX_SCORE)*100);
-    const cls=scoreClass(pct);
-    return`<tr>
+    const pct      = Math.round((p.score / MAX_SCORE) * 100);
+    const cls      = scoreClass(pct);
+    const feedback = getFeedback(pct);
+    return `<tr>
       <td style="color:var(--muted);font-size:13px">${i+1}</td>
       <td>
         <span class="bar-wrap"><span class="bar ${cls}" style="width:${pct}%"></span></span>
         <span class="score-cell">${p.score}<span style="color:var(--muted);font-weight:400;font-size:12px">/${MAX_SCORE}</span></span>
       </td>
       <td><span class="badge ${cls}">${pct}%</span></td>
+      <td><span class="feedback-pill ${feedback.cls}">${feedback.text}</span></td>
       <td style="color:var(--muted);font-size:13px">${p.date||''}</td>
     </tr>`;
   }).join('');
 
   document.getElementById('table-area').innerHTML=`
     <table>
-      <thead><tr><th style="width:40px">#</th><th>Score</th><th>Result</th><th>Date</th></tr></thead>
+      <thead><tr>
+        <th style="width:40px">#</th>
+        <th>Score</th>
+        <th>Result</th>
+        <th>Feedback</th>
+        <th>Date</th>
+      </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 
-  document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('last-updated').textContent =
+    'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
 
 function renderStats(data){
-  const n=data.length;
-  document.getElementById('s-count').textContent=n;
-  if(!n){document.getElementById('s-avg').textContent='—';document.getElementById('s-top').textContent='—';return;}
-  const avg=Math.round(data.reduce((s,p)=>s+p.score,0)/n);
-  const top=Math.max(...data.map(p=>p.score));
-  const avgPct=Math.round(avg/MAX_SCORE*100);
-  const el=document.getElementById('s-avg');
-  el.textContent=avg+' pts';
-  el.className='stat-value '+scoreClass(avgPct);
-  document.getElementById('s-top').textContent=top+' pts';
+  const n = data.length;
+  document.getElementById('s-count').textContent = n;
+  if(!n){
+    document.getElementById('s-avg').textContent='—';
+    document.getElementById('s-top').textContent='—';
+    return;
+  }
+  const avg    = Math.round(data.reduce((s,p)=>s+p.score,0)/n);
+  const top    = Math.max(...data.map(p=>p.score));
+  const avgPct = Math.round(avg/MAX_SCORE*100);
+  const el     = document.getElementById('s-avg');
+  el.textContent  = avg + '/' + MAX_SCORE;
+  el.className    = 'stat-value ' + scoreClass(avgPct);
+  document.getElementById('s-top').textContent = top + '/' + MAX_SCORE;
 }
 
 loadData();
