@@ -121,7 +121,9 @@ function render(data){
     return `<tr>
       <td style="color:var(--muted);font-size:13px">${i+1}</td>
       <td>
-        <span class="bar-wrap"><span class="bar ${cls}" style="width:${pct}%"></span></span>
+        <span style="display:inline-flex;gap:3px;vertical-align:middle;margin-right:10px">
+          ${Array.from({length:MAX_SCORE},(_,k)=>`<span style="width:18px;height:14px;border-radius:3px;background:${k<p.score?(pct>=75?'var(--good)':pct>=50?'var(--ok)':'var(--low)'):'var(--border)'}"></span>`).join('')}
+        </span>
         <span class="score-cell">${p.score}<span style="color:var(--muted);font-weight:400;font-size:12px">/${MAX_SCORE}</span></span>
       </td>
       <td><span class="badge ${cls}">${pct}%</span></td>
