@@ -111,7 +111,7 @@ function render(data){
         <span class="score-cell">${p.score}<span style="color:var(--muted);font-weight:400;font-size:12px">/${MAX_SCORE}</span></span>
       </td>
       <td><span class="badge ${cls}">${pct}%</span></td>
-      <td style="color:var(--muted);font-size:13px">${formatDate(p.date)}</td>
+      <td style="color:var(--muted);font-size:13px">${p.date||''}</td>
     </tr>`;
   }).join('');
 
@@ -135,14 +135,6 @@ function renderStats(data){
   el.textContent=avg+' pts';
   el.className='stat-value '+scoreClass(avgPct);
   document.getElementById('s-top').textContent=top+' pts';
-}
-
-function formatDate(d){
-  if(!d)return '';
-  try{
-    const dt=new Date(d);
-    return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  }catch(e){return d;}
 }
 
 loadData();
