@@ -273,7 +273,7 @@ function render(data){
 
   const sorted=[...data].sort((a,b)=>b.score-a.score);
   const rows=sorted.map((p,i)=>{
-    const pct=Math.round((p.score/MAX_SCORE)*100);
+    const pct=Math.round((parseFloat(p.score)/MAX_SCORE)*100);
     const cls=scoreClass(pct);
     const fb=getFeedback(pct);
     const rc=rankClass(i);
@@ -282,7 +282,7 @@ function render(data){
       <td><span class="rank-num ${rc}">${medal||('#'+(i+1))}</span></td>
       <td>
         <span style="display:inline-flex;gap:4px;vertical-align:middle;margin-right:10px">
-          ${Array.from({length:MAX_SCORE},(_,k)=>`<span style="width:20px;height:16px;border-radius:3px;background:${k<p.score?(pct>=75?'var(--good)':pct>=50?'var(--ok)':'var(--low)'):'rgba(255,255,255,0.06)'};box-shadow:${k<p.score?'0 0 6px '+(pct>=75?'rgba(0,255,136,0.4)':pct>=50?'rgba(255,184,0,0.4)':'rgba(255,58,92,0.4)'):'none'}"></span>`).join('')}
+          ${Array.from({length:MAX_SCORE},(_,k)=>`<span style="width:20px;height:16px;border-radius:3px;background:${k<parseFloat(p.score)?(pct>=75?'var(--good)':pct>=50?'var(--ok)':'var(--low)'):'rgba(255,255,255,0.06)'};box-shadow:${k<parseFloat(p.score)?'0 0 6px '+(pct>=75?'rgba(0,255,136,0.4)':pct>=50?'rgba(255,184,0,0.4)':'rgba(255,58,92,0.4)'):'none'}"></span>`).join('')}
         </span>
         <span style="font-family:'Orbitron',sans-serif;font-size:13px">${p.score}<span style="color:var(--muted);font-size:11px">/${MAX_SCORE}</span></span>
       </td>
@@ -309,13 +309,13 @@ function renderStats(data){
   const n=data.length;
   document.getElementById('s-count').textContent=n;
   if(!n){document.getElementById('s-avg').textContent='—';document.getElementById('s-top').textContent='—';return;}
-  const avg=Math.round(data.reduce((s,p)=>s+p.score,0)/n);
+  const avg=(data.reduce((s,p)=>s+p.score,0)/n).toFixed(1);
   const top=Math.max(...data.map(p=>p.score));
-  const avgPct=Math.round(avg/MAX_SCORE*100);
+  const avgPct=Math.round(parseFloat(avg)/MAX_SCORE*100);
   const el=document.getElementById('s-avg');
   el.textContent=avg+'/'+MAX_SCORE;
   el.className='stat-value '+scoreClass(avgPct);
-  document.getElementById('s-top').textContent=top+'/'+MAX_SCORE;
+  document.getElementById('s-top').textContent=Number(top).toFixed(1)+'/'+MAX_SCORE;
 }
 
 function renderChart(data){
@@ -325,7 +325,7 @@ function renderChart(data){
 
   const sorted=[...data].sort((a,b)=>a.score-b.score);
   const labels=sorted.map((_,i)=>'P'+(i+1));
-  const scores=sorted.map(p=>p.score);
+  const scores=sorted.map(p=>parseFloat(p.score));
   const colors=scores.map(s=>{
     const pct=Math.round((s/MAX_SCORE)*100);
     return pct>=75?'rgba(0,255,136,0.8)':pct>=50?'rgba(255,184,0,0.8)':'rgba(255,58,92,0.8)';
@@ -386,7 +386,7 @@ function renderChart(data){
         const {ctx,data}=chart;
         chart.getDatasetMeta(0).data.forEach((bar,i)=>{
           const score=data.datasets[0].data[i];
-          const label=`${score}/${MAX_SCORE}`;
+          const label=`${Number(score).toFixed(1)}/${MAX_SCORE}`;
           const barH=bar.base-bar.y;
           if(barH<28) return;
           ctx.save();
