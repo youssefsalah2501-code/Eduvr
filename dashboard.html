@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduVR · Results</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -71,6 +72,13 @@ tr:hover td{background:rgba(0,0,0,0.02)}
     <div class="stat"><div class="stat-label">Average score</div><div class="stat-value" id="s-avg">—</div></div>
     <div class="stat"><div class="stat-label">Top score</div><div class="stat-value good" id="s-top">—</div></div>
   </div>
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Score per player</div>
+    <div style="padding:20px;height:280px">
+      <canvas id="bar-chart"></canvas>
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-title">Player results</div>
     <div id="table-area"><div class="loading"><div class="spinner"></div>Loading results…</div></div>
@@ -112,6 +120,7 @@ function render(data){
   }
 
   renderStats(data);
+  renderChart(data);
 
   const sorted=[...data].sort((a,b)=>b.score-a.score);
   const rows=sorted.map((p,i)=>{
@@ -163,6 +172,52 @@ function renderStats(data){
   el.textContent  = avg + '/' + MAX_SCORE;
   el.className    = 'stat-value ' + scoreClass(avgPct);
   document.getElementById('s-top').textContent = top + '/' + MAX_SCORE;
+}
+
+
+function renderChart(data){
+  const canvas = document.getElementById('bar-chart');
+  if(!canvas) return;
+  if(window._barChart) window._barChart.destroy();
+
+  const sorted = [...data].sort((a,b)=>b.score-a.score);
+  const labels = sorted.map((p,i)=> p.username || ('Player '+(i+1)));
+  const scores = sorted.map(p=>p.score);
+  const colors = scores.map(s=>{
+    const pct = Math.round((s/MAX_SCORE)*100);
+    return pct>=75?'#16a34a':pct>=50?'#d97706':'#dc2626';
+  });
+
+  window._barChart = new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Score',
+        data:scores,
+        backgroundColor:colors,
+        borderRadius:6,
+        borderSkipped:false,
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{
+          min:0,
+          max:MAX_SCORE,
+          ticks:{stepSize:1,color:'#888'},
+          grid:{color:'rgba(0,0,0,0.06)'}
+        },
+        x:{
+          ticks:{color:'#888'},
+          grid:{display:false}
+        }
+      }
+    }
+  });
 }
 
 loadData();
