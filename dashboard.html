@@ -280,6 +280,7 @@ function render(data){
     const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
     return`<tr>
       <td><span class="rank-num ${rc}">${medal||('#'+(i+1))}</span></td>
+      <td style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--accent)">${p.username||'Anonymous'}</td>
       <td>
         <span style="display:inline-flex;gap:4px;vertical-align:middle;margin-right:10px">
           ${Array.from({length:MAX_SCORE},(_,k)=>`<span style="width:20px;height:16px;border-radius:3px;background:${k<parseFloat(p.score)?(pct>=75?'var(--good)':pct>=50?'var(--ok)':'var(--low)'):'rgba(255,255,255,0.06)'};box-shadow:${k<parseFloat(p.score)?'0 0 6px '+(pct>=75?'rgba(0,255,136,0.4)':pct>=50?'rgba(255,184,0,0.4)':'rgba(255,58,92,0.4)'):'none'}"></span>`).join('')}
@@ -296,7 +297,7 @@ function render(data){
     <table>
       <thead><tr>
         <th style="width:50px">Rank</th>
-        <th>Score</th><th>Result</th><th>Feedback</th><th>Date</th>
+        <th>Player</th><th>Score</th><th>Result</th><th>Feedback</th><th>Date</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
@@ -324,7 +325,7 @@ function renderChart(data){
   if(!data||!data.length) return;
 
   const sorted=[...data].sort((a,b)=>a.score-b.score);
-  const labels=sorted.map((_,i)=>'P'+(i+1));
+  const labels=sorted.map((p,i)=>p.username||('P'+(i+1)));
   const scores=sorted.map(p=>parseFloat(p.score));
   const colors=scores.map(s=>{
     const pct=Math.round((s/MAX_SCORE)*100);
