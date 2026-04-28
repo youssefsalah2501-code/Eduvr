@@ -186,53 +186,53 @@ tr:hover td{background:rgba(37,99,235,0.04)}
 <header>
   <div>
     <div class="logo">EduVR</div>
-    <div class="logo-sub">Mission Control · Results</div>
+    <div class="logo-sub">Contrôle Mission · Résultats</div>
   </div>
   <div class="header-right">
     <span class="updated" id="last-updated"></span>
-    <button class="btn" onclick="loadData()">↺ Refresh</button>
-    <button class="btn btn-clear" onclick="askClear()">✕ Clear</button>
+    <button class="btn" onclick="loadData()">↺ Actualiser</button>
+    <button class="btn btn-clear" onclick="askClear()">✕ Effacer</button>
   </div>
 </header>
 
 <div class="container">
 
   <div class="confirm-box" id="confirm-box">
-    <span style="color:var(--low)">Delete all results?</span>
-    <span style="color:var(--muted);font-size:10px">This cannot be undone.</span>
-    <button class="btn btn-clear" onclick="confirmClear()">Confirm</button>
-    <button class="btn" onclick="cancelClear()">Cancel</button>
+    <span style="color:var(--low)">Supprimer tous les résultats ?</span>
+    <span style="color:var(--muted);font-size:10px">Cette action est irréversible.</span>
+    <button class="btn btn-clear" onclick="confirmClear()">Confirmer</button>
+    <button class="btn" onclick="cancelClear()">Annuler</button>
   </div>
 
-  <div class="section-label">Overview</div>
+  <div class="section-label">Vue générale</div>
   <div class="stat-row">
     <div class="stat">
-      <div class="stat-label">Players</div>
+      <div class="stat-label">Joueurs</div>
       <div class="stat-value neutral" id="s-count">—</div>
     </div>
     <div class="stat">
-      <div class="stat-label">Average score</div>
+      <div class="stat-label">Score moyen</div>
       <div class="stat-value" id="s-avg">—</div>
     </div>
     <div class="stat">
-      <div class="stat-label">Top score</div>
+      <div class="stat-label">Meilleur score</div>
       <div class="stat-value good" id="s-top">—</div>
     </div>
   </div>
 
-  <div class="section-label">Score chart</div>
+  <div class="section-label">Graphique des scores</div>
   <div class="card">
-    <div class="card-title">Score per player</div>
+    <div class="card-title">Score par joueur</div>
     <div style="padding:24px;height:300px">
       <canvas id="bar-chart"></canvas>
     </div>
   </div>
 
-  <div class="section-label">Leaderboard</div>
+  <div class="section-label">Classement</div>
   <div class="card">
-    <div class="card-title">Player results</div>
+    <div class="card-title">Résultats des joueurs</div>
     <div id="table-area">
-      <div class="loading"><div class="spinner"></div>Loading…</div>
+      <div class="loading"><div class="spinner"></div>Chargement…</div>
     </div>
   </div>
 
@@ -244,28 +244,28 @@ const MAX_SCORE = 9;
 
 function getFeedback(pct){
   if(pct>=86) return {text:"Excellent !",  cls:"good"};
-  if(pct>=71) return {text:"Very good !",  cls:"good"};
-  if(pct>=57) return {text:"Good !",       cls:"ok"};
-  if(pct>=43) return {text:"Try harder !", cls:"ok"};
-  return             {text:"Replay !",     cls:"low"};
+  if(pct>=71) return {text:"Très bien !",  cls:"good"};
+  if(pct>=57) return {text:"Bien !",       cls:"ok"};
+  if(pct>=43) return {text:"Encore un effort !", cls:"ok"};
+  return             {text:"Rejouer !",     cls:"low"};
 }
 function scoreClass(pct){return pct>=75?'good':pct>=50?'ok':'low'}
 function rankClass(i){return i===0?'gold':i===1?'silver':i===2?'bronze':''}
 
 async function loadData(){
-  document.getElementById('table-area').innerHTML='<div class="loading"><div class="spinner"></div>Loading…</div>';
+  document.getElementById('table-area').innerHTML='<div class="loading"><div class="spinner"></div>Chargement…</div>';
   try{
     const res  = await fetch(APPS_SCRIPT_URL+"?action=get");
     const data = await res.json();
     render(data);
   }catch(e){
-    document.getElementById('table-area').innerHTML='<div class="empty">Connection failed</div>';
+    document.getElementById('table-area').innerHTML='<div class="empty">Connexion échouée</div>';
   }
 }
 
 function render(data){
   if(!data||!data.length){
-    document.getElementById('table-area').innerHTML='<div class="empty">No data yet — play the game!</div>';
+    document.getElementById('table-area').innerHTML='<div class="empty">Aucune donnée — jouez d'abord !</div>';
     renderStats([]);renderChart([]);return;
   }
   renderStats(data);
@@ -296,8 +296,8 @@ function render(data){
   document.getElementById('table-area').innerHTML=`
     <table>
       <thead><tr>
-        <th style="width:50px">Rank</th>
-        <th>Player</th><th>Score</th><th>Result</th><th>Feedback</th><th>Date</th>
+        <th style="width:50px">Rang</th>
+        <th>Joueur</th><th>Score</th><th>Résultat</th><th>Avis</th><th>Date</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
@@ -364,7 +364,7 @@ function renderChart(data){
           titleColor:'#2563eb',
           bodyColor:'#1e293b',
           padding:10,
-          callbacks:{label:ctx=>` Score: ${ctx.raw}/${MAX_SCORE}`}
+          callbacks:{label:ctx=>` Score : ${ctx.raw}/${MAX_SCORE}`}
         },
       },
       scales:{
